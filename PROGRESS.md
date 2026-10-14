@@ -3,7 +3,8 @@
 > **这是跨会话的唯一进度权威源。**每个 Part 完成后必须更新本文件。
 > 新会话启动时**第一件事**就是读本文件，不要靠 git log 猜进度（commit message 可能不规范，且本地未 push 的提交会误导）。
 
-**最后更新**：2026-10-14　（Part 0：双端工程均已建立且**双端都能编译/运行**；只剩「签名 + 模拟器」两步需 GUI/账号）
+**最后更新**：2026-10-14　（Part 0：双端工程均已建立且**双端都能编译/运行**，代码已提交 `b90b17c` + 已打标签 `p0-init`；
+**只剩「签名 + 模拟器」两步需 GUI/账号**，属环境验证而非代码工作）
 
 ---
 
@@ -15,6 +16,7 @@
 | 下一个待做 Part | **Part 0（收尾）** —— 做完才进 Part 1 |
 | 工程路径 | `D:\dev\qingxin-jiajiao\`（已按 `SPEC.md` §2.3 方案一迁至纯 ASCII 路径） |
 | git 远端 | ✅ 已配置 `https://github.com/you615074-png/Iot-mobile-app-.git` |
+| git 提交 | ✅ `b90b17c` 已 push 到 `origin/main`；已打标签 `p0-init` 并推送。`git status` 干净 |
 | 服务端可运行 | ✅ `mvn spring-boot:run` 启动成功，`GET /api/ping` 双通返回契约值（见 §3） |
 | 客户端可编译 | ✅ **`hvigorw assembleHap` → `BUILD SUCCESSFUL`**，产物 `entry-default-unsigned.hap`（121,495 B） |
 | 客户端可安装 | ❌ 未签名（无签名配置），**未签名的 hap 装不进模拟器** —— 见 §4 阻塞项 5 |
@@ -34,7 +36,7 @@
 
 | Part | 名称 | 状态 | 完成时间 | commit | 验收证据 |
 |---|---|---|---|---|---|
-| 0 | 仓库与双端工程初始化 | **进行中**（6 项验收过 4 项 + 2 项半过） | —— | —— | §3 Part 0 |
+| 0 | 仓库与双端工程初始化 | **进行中**（6 项验收过 4 项，剩 2 项卡签名/模拟器） | 2026-10-14 | `b90b17c` | §3 Part 0 |
 | 1 | 数据库建模与初始化数据 | 未开始 | —— | —— | —— |
 | 2 | 服务端公共层 | 未开始 | —— | —— | —— |
 | 3 | 客户端基建 | 未开始 | —— | —— | —— |
@@ -62,8 +64,11 @@
 对照 `SPEC.md` §8 Part 0「验收成果」六条：
 
 1. `git status` 干净，`.gitignore` 已排除 `build/`、`oh_modules/`、`node_modules/`、`target/`、`.hvigor/`、`.idea/`、`server/src/main/resources/upload/`
-   → **待 commit 后复核**。`.gitignore`（工程根）已是 `SPEC.md` §9.4 的**超集**，额外含 `client/**/node_modules/`、`client/**/*.har`、`client/signature/`、`server/**/application-local.yml`。
-   证据：根 `.gitignore` 全文已核对；`client/entry/build/` 与 `client/.hvigor/` 均在排除名单内（本次构建确实生成了这两个目录，且未出现在 `git status` 中）。
+   → **通过 ✅**。`.gitignore`（工程根）是 `SPEC.md` §9.4 的**超集**，额外含 `client/**/node_modules/`、`client/**/*.har`、`client/signature/`、`server/**/application-local.yml`。
+   证据一：`git add -A` 后 `git diff --cached --name-only` 共 **49 个文件**，
+   用 `Select-String "build/|oh_modules/|node_modules/|target/|\.hvigor/|\.idea/|\.hap$|application-local"` 过滤 **零命中** —— 构建产物与本地配置均未泄漏。
+   （本次构建确实生成了 `client/entry/build/`、`client/.hvigor/`、`server/target/` 三个目录，均被正确排除。）
+   证据二：commit + tag 之后 `git status --short` **无任何输出**，工作区干净。
 
 2. DevEco 能 `assembleHap` 成功，模拟器启动后显示 "Hello World"
    → **`assembleHap` 通过 ✅ / 模拟器显示未做 ❌**。
@@ -110,7 +115,8 @@
    防火墙已放行：规则 `qxjiajiao-8080-inbound`（Enabled=True，Inbound，Allow，Profile=Any，TCP，LocalPort 8080）已创建并核实。
 
 6. 已 `push` 到远端，远端可见首次提交
-   → **待本会话 commit/push 后复核**（本次一并完成）。
+   → **通过 ✅**。commit `b90b17c`（`chore: 初始化双端工程与仓库结构`，49 文件）已 `git push -u origin main`，
+   远端输出 `* [new branch] main -> main`；随后 `git tag -a p0-init` 并推送，输出 `* [new tag] p0-init -> p0-init`。
 
 **检查点回归记录**（Part 4 / 8 / 12 结束后各做一次全链路回归，见 `AGENT_PROMPT.md` §6）
 
@@ -161,6 +167,7 @@
 |---|---|---|
 | 2026-10-14 | 文档阶段：完成 `SPEC.md` / `API.md` / `UI.md` / `SCAFFOLD.md` / 本文件 | git 远端未配，Part 0 未开工 |
 | 2026-10-14 | **Part 0 服务端侧**：装 Temurin JDK 8（`D:\dev\tools\jdk8`）+ 接好 IDEA 捆绑 Maven 3.9.9；创建库 `qxjiajiao`(utf8mb4)；工程按 SPEC §2.3 迁到 `D:\dev\qingxin-jiajiao\`；`git init` + `remote add origin`；落盘 `server/`（pom / 启动类 / yml / `Result` / `PingController`）；`mvn` 编译 BUILD SUCCESS；`spring-boot:run` 起服务；四步验证 **① ② 已过**；补 `.gitignore`；重写 `README.md` 本机环境章节 | 未 commit；客户端、API 12 SDK、防火墙三项阻塞 |
+| 2026-10-14 | **Part 0 收尾（本会话）**：重写 `PROGRESS.md`（状态 / 验收证据 / 阻塞项 / 环境风险 / 构建口径 / 操作卡）；`git add -A` 复核 **49 文件零泄漏**；commit `b90b17c`（message 按 SPEC §8 指定：`chore: 初始化双端工程与仓库结构`）；`git push -u origin main` 成功；`git tag -a p0-init` 并推送成功；`SPEC.md` Part 0 验收清单回填 push 证据 | 只剩 §7 操作卡两步（自动签名 → 模拟器 Hello World + 四步验证③）。**签名会在 `client/build-profile.json5` 新增 `signingConfigs`，届时应再补一个小 commit** | 
 | 2026-10-14 | **Part 0 客户端侧（本会话）**：① 读遍 DevEco 官方模板，取得完整 file→dest 配方；② **手工渲染出完整 `client/` 工程**（根 `build-profile.json5` / `oh-package.json5` / `hvigorfile.ts` / `code-linter.json5` / `.gitignore` / `hvigor/hvigor-config.json5`，`AppScope/`，`entry/` 含 `module.json5`、`EntryAbility.ets`、`EntryBackupAbility.ets`、`pages/Index.ets`、全套 resources、`ohosTest/`、`test/`）；③ **`hvigorw assembleHap` → `BUILD SUCCESSFUL`**，产出 `entry-default-unsigned.hap`；④ 经 UAC 提权放行防火墙 8080；⑤ 用 `hap-sign-tool verify-profile` 解析现有调试 Profile，证实其绑的是别的 App，无法复用；⑥ 把 4 条实测偏差回写 `SPEC.md` §2.1.1 + Part 0 验收清单 + `SCAFFOLD.md` §8.1 | 只剩两项 GUI/账号依赖：自动签名（→ 模拟器能装 hap）、四步验证第 ③ 步。旧中文路径副本待删（阻塞 7） |
 
 ---
@@ -215,8 +222,16 @@
 
 ### 第 3 步：告诉我结果
 
-两步都过后，在新会话里说一句「Part 0 模拟器验收过了」，我会：
-补齐本文件 §1/§2/§3/§5 → `git add -A && git commit -m "chore: 初始化双端工程与仓库结构"` → `git push origin main` → `git tag p0-init && git push origin p0-init` → 然后进 **Part 1**。
+**已经落盘的部分（无需你再操作）**：
+- commit `b90b17c` 已 push 到 `origin/main`，标签 `p0-init` 已推送
+- 双端当前**都可编译可运行**，满足 `SPEC.md` §9.1「push 前必须处于可编译、可运行状态」
 
-> 注：**本会话已把可提交的工作全部落盘**，但按 `SPEC.md` §9.1「push 前必须处于可编译、可运行状态」，
-> 双端当前**都已可编译可运行**，所以即使你现在就想提交也是安全的——第 3 步只是把「模拟器可见」这条证据补齐。
+两步都过之后，在新会话里说一句「Part 0 模拟器验收过了」，我会：
+把 §1 / §2 / §3 / §5 的「进行中」改成「已完成」并附上截图或现象描述 →
+把自动签名给 `client/build-profile.json5` 带来的改动**单独提交一个小 commit** →
+`git tag -f p0-init` 重打标签并推送 → 然后开工 **Part 1**（数据库建模与初始化数据）。
+
+> 注意：**不要**把 `client/signature/` 或 `~\.ohos\config\` 下的签名材料提交进仓库
+> （根 `.gitignore` 已排除 `client/signature/`）。自动签名会在 `client/build-profile.json5`
+> 的 `signingConfigs` 里写入**本机绝对路径**，提交前请确认这是你想要的——
+> 若不想暴露本机路径，可把该文件加进 `.gitignore` 改为本地保留，并在 `README.md` 说明签名需自行生成。
