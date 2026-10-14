@@ -1,0 +1,100 @@
+# ============================================================
+#  倾心家教 · 服务端配置
+#  方案 A：JDK 8 + Spring Boot 2.7.18
+# ============================================================
+server:
+  port: 8080
+  # SPEC §2.2：必须监听 0.0.0.0，模拟器才能通过宿主局域网 IP 访问
+  address: 0.0.0.0
+
+spring:
+  application:
+    name: qxjiajiao-server
+
+  # ---------- 数据源（MySQL 8，库名 qxjiajiao，utf8mb4，Asia/Shanghai） ----------
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # ⚠️ characterEncoding=utf8 在 Connector/J 8 下会被映射为服务端 utf8mb4，配合库表 utf8mb4 即可存中文/emoji
+    url: "jdbc:mysql://localhost:3306/qxjiajiao?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true"
+    username: root
+    # ⚠️ SCAFFOLD §2 原文此处为占位符 "请替换为你的MySQL密码"。
+    # 本机 MySQL（D:\mysql\mysql-5.7.19）的 my.ini 启用了 skip-grant-tables，未做口令校验，
+    # 故此处留空即可连通；若换到有口令的环境，请改这里，或新建 server/src/main/resources/application-local.yml
+    # 覆盖本项（该文件已被 .gitignore 排除，不会 push 到远端）。
+    password: ""
+
+  # ---------- 上传大小限制（SPEC Part 2：限制后缀 jpg/png/webp/mp3/m4a，单文件 10MB） ----------
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB        # 单文件上限
+      max-request-size: 20MB     # 单次请求上限（多文件时）
+      file-size-threshold: 2MB
+
+  # ---------- ⚠️ Knife4j(Springfox) 必需：解决 Boot 2.6+ PathPatternParser 冲突 ----------
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  # ---------- Jackson（统一时间格式，避免前端拿到时间戳） ----------
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+# ============================================================
+#  MyBatis-Plus
+# ============================================================
+mybatis-plus:
+  # Mapper XML 位置（SPEC §3.3：resources/mapper/*.xml）
+  mapper-locations: classpath*:/mapper/**/*.xml
+  # 实体包，开启后 XML 里可直接写类名不用全限定名
+  type-aliases-package: com.jsu.qxjiajiao.entity
+  configuration:
+    # 下划线字段名 -> 驼峰属性名（如 create_time -> createTime）
+    map-underscore-to-camel-case: true
+    # 开发期打印 SQL；上线前可改为 NoLoggingImpl
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+    db-config:
+      # 主键策略：数据库自增（对应 schema.sql 的 BIGINT AUTO_INCREMENT）
+      id-type: auto
+      # 逻辑删除：实体字段 deleted，0=未删除，1=已删除（对应 §6.3 sys_user/order 的 deleted 字段）
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  # 分页插件不是在这里配的，而在 MybatisPlusConfig.java 里注册（见 §3.2）
+
+# ============================================================
+#  本项目自定义配置项
+# ============================================================
+qxjiajiao:
+  jwt:
+    # ⚠️⚠️ 必须自行替换！这不是可用密钥，只是一个占位符。⚠️⚠️
+    # 生成建议（任选一种，得到 >= 32 字符的随机串）：
+    #   PowerShell : [Convert]::ToBase64String((1..48 | %{[byte](Get-Random -Max 256)}))
+    #   Git Bash   : openssl rand -base64 48
+    # 长度要求：jjwt 0.11.5 使用 HS256，密钥必须 >= 256 bit（32 字节），否则抛 WeakKeyException。
+    secret: "CHANGE_ME_REPLACE_WITH_YOUR_OWN_RANDOM_SECRET_AT_LEAST_32_CHARS"
+    # JWT 有效期（天）：SPEC Part 2 规定 7 天
+    expire-days: 7
+  upload:
+    # 文件落盘根目录：必须是【绝对路径】且用【正斜杠 /】（Windows 反斜杠会被当转义）。
+    # 该目录已被 .gitignore 排除（server/src/main/resources/upload/），运行时自动创建。
+    # ⚠️ 若工程迁到 ASCII 路径（SPEC §2.3），这里也要同步改成新路径。
+    dir: "D:/dev/qingxin-jiajiao/server/src/main/resources/upload"
+  pay:
+    # 支付 mock 总开关：true=走模拟支付（本项目默认），不接真实微信/支付宝
+    mock: true
+
+# ============================================================
+#  日志
+# ============================================================
+logging:
+  level:
+    root: info
+    com.jsu.qxjiajiao: debug
+    com.jsu.qxjiajiao.mapper: debug   # 打印 Mapper 层 SQL（调试期）
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

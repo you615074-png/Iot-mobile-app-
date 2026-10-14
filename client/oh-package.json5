@@ -1,0 +1,11 @@
+{
+  // modelVersion 必须与 hvigor/hvigor-config.json5 中的值**完全一致**，
+  // 否则 hvigor 的 ValidateUtil.modelVersionCheck 会以 INCONSISTENT_MODEL_VERSION 终止构建。
+  "modelVersion": "5.0.0",
+  "description": "倾心家教 · 鸿蒙客户端",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hypium": "1.0.29",
+    "@ohos/hamock": "1.0.0"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "app": {
+    // 签名配置：初始为空数组。SCAFFOLD.md §6.3 的自动签名会在 DevEco 里回填一条名为 "default" 的配置。
+    // 未签名前**不要**在 products[] 里写 "signingConfig": "default"，否则报「找不到签名配置」（SCAFFOLD.md §8.1 警告）。
+    "signingConfigs": [],
+    "products": [
+      {
+        "name": "default",
+        // 【口径】SPEC.md §3.2 / SCAFFOLD.md §8.1：兼容 API 12，不要改。
+        "targetSdkVersion": "5.0.0(12)",
+        "compatibleSdkVersion": "5.0.0(12)",
+        // HarmonyOS 应用（本项目面向 HarmonyOS，非 OpenHarmony）。
+        // 注意：HarmonyOS 工程**不写** compileSdkVersion —— 见 PROGRESS.md §6 的说明，
+        // hvigor 对 HarmonyOS 强制使用本机已安装 SDK 作为编译 SDK，显式指定其它版本会被
+        // ValidateUtil.integrationVersionCheck 直接判错。
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug"
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

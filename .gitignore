@@ -1,0 +1,32 @@
+# ========== 鸿蒙客户端 (client/) ==========
+client/**/build/
+client/**/.hvigor/
+client/**/oh_modules/
+client/**/node_modules/
+client/**/.preview/
+client/**/.idea/
+client/**/.clangd/
+client/**/.clang-format
+client/local.properties
+client/**/*.hap
+client/**/*.har
+client/signature/
+
+# ========== Spring Boot 服务端 (server/) ==========
+server/target/
+server/logs/
+server/src/main/resources/upload/
+server/**/application-local.yml
+
+# ========== 通用 ==========
+.idea/
+.vscode/
+*.iml
+*.log
+.DS_Store
+Thumbs.db
+
+# ========== Office 临时文件 ==========
+~$*.docx
+~$*.pptx
+~$*.xlsx

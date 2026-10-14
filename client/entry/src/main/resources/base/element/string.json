@@ -1,0 +1,32 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "倾心家教 · 主模块"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "倾心家教"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "倾心家教"
+    },
+    {
+      "name": "reason_read_imagevideo",
+      "value": "用于选择头像与上传资质证书照片"
+    },
+    {
+      "name": "reason_camera",
+      "value": "用于拍摄教师资质证书照片"
+    },
+    {
+      "name": "reason_microphone",
+      "value": "用于录制发送语音消息"
+    },
+    {
+      "name": "reason_notification",
+      "value": "用于接收上课与作业提醒通知"
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ============================================================
+         Spring Boot 父工程：2.7.18（方案 A：JDK 8 + Spring Boot 2.7.18）
+         2.7.x 是最后一条支持 JDK 8 的 Spring Boot 主线；2.7.18 为其最后一个补丁版。
+         【变更规则】一旦选定方案 A，Part 0 之后不允许中途换 3.x（3.x 要求 JDK 17 且 javax.* → jakarta.*）。
+         ============================================================ -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.18</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.jsu</groupId>
+    <artifactId>qxjiajiao-server</artifactId>
+    <version>1.0.0</version>
+    <name>qxjiajiao-server</name>
+    <description>倾心家教 · 服务端（Spring Boot + MyBatis-Plus + MySQL）</description>
+    <packaging>jar</packaging>
+
+    <properties>
+        <!-- JDK 8：由 spring-boot-starter-parent 映射到 maven.compiler.source/target -->
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- 第三方依赖版本集中管理（下面 dependency 里不再散写版本号） -->
+        <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
+        <mysql.version>8.0.33</mysql.version>
+        <lombok.version>1.18.30</lombok.version>
+        <jjwt.version>0.11.5</jjwt.version>
+        <knife4j.version>3.0.3</knife4j.version>
+    </properties>
+
+    <dependencies>
+        <!-- ==================== Web / 校验 / WebSocket（由 Boot BOM 管理版本=2.7.18） ==================== -->
+        <!-- 【版本说明】以下 4 个 spring-boot-starter-* 的版本由父工程 BOM 统一提供 = 2.7.18，
+             与 JDK 8 完全兼容。此处显式写出 2.7.18 仅为“口径可见”，删掉亦可正常构建。 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>2.7.18</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+            <version>2.7.18</version>
+        </dependency>
+        <!-- Part 11 实时聊天用：@ServerEndpoint / WebSocketConfig -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+            <version>2.7.18</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>2.7.18</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ==================== MyBatis-Plus ==================== -->
+        <!-- 【兼容性】MyBatis-Plus 3.5.3.1 是 Boot 2.x + JDK 8 广泛验证过的稳定版本。
+             ⚠️ 3.5.9+ 起官方拆分了 starter（针对 Boot 3 的 -spring-boot3-starter），若升级务必确认
+             是否仍使用 mybatis-plus-boot-starter 这个坐标，且不要在 Boot 2.7 上误用 Boot3 版 starter。
+             若 3.5.3.1 拉取异常，可退回 3.5.5（同样支持 Boot 2.7 + JDK 8）。 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>${mybatis-plus.version}</version>
+        </dependency>
+
+        <!-- ==================== MySQL 驱动 ==================== -->
+        <!-- 【兼容性】Spring Boot 2.7.18 管理的是 mysql:mysql-connector-java:8.0.33。
+             注意：Boot 3.x 才改为新的坐标 com.mysql:mysql-connector-j，本项目（Boot 2.7）用旧坐标。
+             ⚠️ 若构建时提示该坐标版本找不到，用 `mvn dependency:tree` 确认 BOM 实际管理版本后对齐。 -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ==================== Lombok ==================== -->
+        <!-- 【兼容性】1.18.30 支持 JDK 8；也是 Boot 2.7.18 BOM 管理的版本。 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ==================== JWT（jjwt 0.11.5 三件套） ==================== -->
+        <!-- 【兼容性】0.11.5 支持 JDK 8，API 与网上教程一致（Jwts.builder()/parserBuilder()）。
+             ⚠️ 若误用 0.12.x，API 大改（parserBuilder 废弃、签名密钥改用 SecretKey），会编译失败——不要升级。
+             注意：HS256 要求密钥长度 >= 256 bit（32 字节），见 application.yml 中 jwt.secret 说明。 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ==================== Knife4j 接口文档 ==================== -->
+        <!-- 【兼容性】knife4j-spring-boot-starter 3.0.3 基于 Springfox 3.0，适配 Spring Boot 2.x。
+             ⚠️ 重要坑：Spring Boot 2.6+ 默认改用 PathPatternParser，会与 Springfox 冲突导致启动报
+             "Failed to start bean 'documentationPluginsBootstrapper'"。因此必须在 application.yml 中加
+             spring.mvc.pathmatch.matching-strategy: ant_path_matcher（已在 §2 写好）。
+             ⚠️ 若 3.0.3 在你的环境仍起不来，可改用 knife4j-openapi3-spring-boot-starter 4.x（基于 springdoc，
+             对 Boot 2.7 更友好），但包名/依赖坐标与注解需相应调整——请先本地验证后再定稿。 -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <version>${knife4j.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 打包时排除 lombok（编译期注解处理器，无需进 runtime） -->
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
